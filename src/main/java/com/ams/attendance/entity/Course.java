@@ -34,14 +34,5 @@ public class Course {
     @ManyToMany(mappedBy = "courses")
     private Set<User> users = new HashSet<>(); 
     
-    // Note: To implement the ManyToMany relationship, you'd add this to the User entity:
-    /*
-    @ManyToMany
-    @JoinTable(
-        name = "user_course",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "course_id")
-    )
-    private Set<Course> courses = new HashSet<>();
-    */
+
 }

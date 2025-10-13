@@ -26,11 +26,10 @@ import java.util.Optional;
 public class AdminService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final DepartmentRepository departmentRepository; // Required for Feature 8 logic
+    private final DepartmentRepository departmentRepository; 
     private final PasswordEncoder passwordEncoder;
     private final CourseRepository courseRepository;
 
-    // Initial check and creation of a default Admin user
     @PostConstruct
     private void createAdminUser() {
         Optional<User> optionalUser = userRepository.findByRole(UserRole.ADMIN);
@@ -40,7 +39,7 @@ public class AdminService implements UserDetailsService {
             admin.setEmail("admin@ams.com");
             admin.setPassword(passwordEncoder.encode("admin123")); 
             admin.setRole(UserRole.ADMIN);
-            admin.setDepartment("IT"); // Setting department here, though it's optional in the User entity
+            admin.setDepartment("IT"); 
             userRepository.save(admin);
             System.out.println("Default Admin User created!");
         } else {
@@ -48,14 +47,11 @@ public class AdminService implements UserDetailsService {
         }
     }
     
-    // --- Spring Security UserDetailsService Implementation ---
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
-    
-    // --- User CRUD (Feature 2) ---
     
     // Create User (Registration/Admin Add User)
     public UserDTO createUser(UserDTO userDto) {
@@ -87,17 +83,15 @@ public class AdminService implements UserDetailsService {
         User existingUser = userRepository.findById(userId)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
 
-        // Update fields that are present in the DTO
         if (userDto.getName() != null) existingUser.setName(userDto.getName());
         if (userDto.getDepartment() != null) existingUser.setDepartment(userDto.getDepartment());
         if (userDto.getDesignation() != null) existingUser.setDesignation(userDto.getDesignation());
         
-        // Admin can update role
+        
         if (userDto.getRole() != null) {
             existingUser.setRole(userDto.getRole());
         }
         
-        // Update password if a new one is provided
         if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
         }
@@ -122,15 +116,13 @@ public class AdminService implements UserDetailsService {
                 .toList();
     }
     
-    // --- NEW ADMIN Functions (Feature 8) ---
     
-    // 1. Department Management (Create)
+    //  Department Management (Create)
     private DepartmentDTO convertToDto(Department department) {
     DepartmentDTO dto = new DepartmentDTO();
     dto.setId(department.getId());
     dto.setName(department.getName());
     dto.setDescription(department.getDescription());
-    // Add other fields as necessary
     return dto;
 }
 
@@ -145,7 +137,7 @@ public class AdminService implements UserDetailsService {
         return convertToDto(savedDept);
     }
     
-    // 2. Course Management (Create)
+    // Course Management (Create)
     private CourseDTO convertToDto(Course course) {
     CourseDTO dto = new CourseDTO();
     dto.setId(course.getId());

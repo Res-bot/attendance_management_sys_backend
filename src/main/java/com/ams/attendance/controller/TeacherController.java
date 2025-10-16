@@ -17,12 +17,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/teacher")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('TEACHER')") // Base authorization
+@PreAuthorize("hasRole('TEACHER')") 
 public class TeacherController {
 
     private final TeacherService teacherService;
-
-    // --- Attendance Marking (Feature 3) ---
 
     @PostMapping("/attendance/mark/{courseId}")
     public ResponseEntity<Void> markAttendanceByClass(
@@ -33,11 +31,8 @@ public class TeacherController {
         return ResponseEntity.ok().build();
     }
     
-    // --- Leave Management (Feature 5) ---
-
     @GetMapping("/leave/pending")
     public ResponseEntity<List<LeaveRequestDTO>> getPendingLeaveRequests() {
-        // This call is now correctly directed to the method defined in TeacherService
         return ResponseEntity.ok(teacherService.getPendingLeaveRequests()); 
     }
 
@@ -47,16 +42,13 @@ public class TeacherController {
             @RequestParam LeaveStatus status,
             @RequestParam(required = false) String notes) {
         
-        // In a real app, retrieve approverId from security context (JWT)
-        // NOTE: This placeholder ID should be replaced with logic to extract the ID from the Authentication principal.
+       
         Long approverId = 1L; 
 
         LeaveRequestDTO updatedRequest = teacherService.reviewLeaveRequest(requestId, approverId, status, notes);
         return ResponseEntity.ok(updatedRequest);
     }
     
-    // --- Reporting (Feature 4) ---
-
     @GetMapping("/reports/course/{courseId}")
     public ResponseEntity<List<AttendanceDTO>> getCourseReport(
             @PathVariable Long courseId,

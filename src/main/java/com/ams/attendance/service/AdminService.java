@@ -32,7 +32,7 @@ public class AdminService implements UserDetailsService {
 
     @PostConstruct
     private void createAdminUser() {
-        Optional<User> optionalUser = userRepository.findByRole(UserRole.ADMIN);
+        List<User> optionalUser = userRepository.findByRole(UserRole.ADMIN);
         if (optionalUser.isEmpty()) {
             User admin = new User();
             admin.setName("Default Admin");
@@ -53,7 +53,6 @@ public class AdminService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
     
-    // Create User (Registration/Admin Add User)
     public UserDTO createUser(UserDTO userDto) {
         if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new RuntimeException("User with this email already exists.");
@@ -71,14 +70,12 @@ public class AdminService implements UserDetailsService {
         return convertToDto(savedUser);
     }
     
-    // Get User by ID
     public UserDTO getUserById(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
         return convertToDto(user);
     }
     
-    // Update User
     public UserDTO updateUser(Long userId, UserDTO userDto) {
         User existingUser = userRepository.findById(userId)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
@@ -100,7 +97,6 @@ public class AdminService implements UserDetailsService {
         return convertToDto(updatedUser);
     }
     
-    // Delete User
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new UsernameNotFoundException("User not found with ID: " + userId);
@@ -109,16 +105,13 @@ public class AdminService implements UserDetailsService {
     }
 
 
-    // Get All Users
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::convertToDto)
                 .toList();
     }
     
-    
-    //  Department Management (Create)
-    private DepartmentDTO convertToDto(Department department) {
+        private DepartmentDTO convertToDto(Department department) {
     DepartmentDTO dto = new DepartmentDTO();
     dto.setId(department.getId());
     dto.setName(department.getName());
@@ -137,14 +130,12 @@ public class AdminService implements UserDetailsService {
         return convertToDto(savedDept);
     }
     
-    // Course Management (Create)
     private CourseDTO convertToDto(Course course) {
     CourseDTO dto = new CourseDTO();
     dto.setId(course.getId());
     dto.setName(course.getName());
     dto.setCourseCode(course.getCourseCode());
     dto.setCredits(course.getCredits());
-    // Only set department ID if the course is linked to one
     if (course.getDepartment() != null) {
         dto.setDepartmentId(course.getDepartment().getId());
     }
@@ -169,36 +160,42 @@ public class AdminService implements UserDetailsService {
         return convertToDto(savedCourse);
     }
 
-    // 3. Find Users Filtered by Role (Feature 2)
-    public List<UserDTO> findUsersByRole(UserRole role) {
-        // The repository method is assumed to return List<User> or Optional<List<User>>
-        // If the repository method is `List<User> findByRole(UserRole role);`, this is correct.
-        return userRepository.findByRole(role).stream().map(this::convertToDto).toList();
-    }
-    
-    // 4. Bulk User Upload (Placeholder Logic)
-    public String uploadBulkUsers(byte[] excelData) {
-        // This is where you would integrate Apache POI
-        System.out.println("Processing bulk upload of size: " + excelData.length + " bytes.");
-        // Example logic: Process the file and return a status message
-        
-        // In a real scenario, this would involve complex file parsing and transactional saves.
-        
-        return "Bulk upload initiated. Check logs for status.";
-    }
-    
-    // 5. Generate Full Attendance Report (Placeholder Logic)
-    public String generateFullAttendanceReport(String period) {
-        System.out.println("Generating full attendance report for period: " + period);
-        // This is where you would query Attendance and aggregation logic
-        
-        // Example logic:
-        // switch(period) { case "MONTHLY": ... case "ANNUAL": ... }
-        
-        return "Report generation successful for " + period + ".";
+     public List<UserDTO> findUsersByRole(UserRole role) {
+        return userRepository.findByRole(role).stream()
+                .map(this::convertToDto)
+                .toList();
     }
 
-    // Helper method for DTO conversion
+    public List<UserDTO> findUsersByDepartment(String department) {
+        return userRepository.findByDepartmentIgnoreCase(department).stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+
+    public List<UserDTO> findUsersByDesignation(String designation) {
+        return userRepository.findByDesignationIgnoreCase(designation).stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+
+    public List<UserDTO> findUsersByDepartmentAndRole(String department, UserRole role) {
+        return userRepository.findByDepartmentAndRole(department, role).stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+
+    public List<UserDTO> searchUsersByEmail(String keyword) {
+        return userRepository.findByEmailContainingIgnoreCase(keyword).stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+
+    public List<UserDTO> findUsersByRoleSorted(UserRole role) {
+        return userRepository.findByRoleOrderByNameAsc(role).stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+    
     private UserDTO convertToDto(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
@@ -207,7 +204,6 @@ public class AdminService implements UserDetailsService {
         dto.setRole(user.getRole());
         dto.setDepartment(user.getDepartment());
         dto.setDesignation(user.getDesignation());
-        // Password hash is intentionally omitted for security
         return dto;
     }
 }

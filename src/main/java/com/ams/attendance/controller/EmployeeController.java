@@ -11,32 +11,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.ams.attendance.entity.User; // Required for casting principal
+import com.ams.attendance.entity.User; 
 
 import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/employee")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('EMPLOYEE', 'TEACHER', 'ADMIN')") // Applies to any user who performs self-service
+@PreAuthorize("hasAnyRole('EMPLOYEE', 'TEACHER', 'ADMIN')") 
 public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    /**
-     * Helper to get the authenticated user's ID from the security context (JWT principal).
-     */
     private Long getCurrentUserId(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return user.getId();
     }
     
-    // --- Attendance Marking (Feature 3) ---
 
     @PostMapping("/checkin")
     public ResponseEntity<AttendanceDTO> checkIn(Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
-        // Use server time for accurate record
         AttendanceDTO record = employeeService.checkIn(userId, LocalDateTime.now(), "Self Check-in");
         return new ResponseEntity<>(record, HttpStatus.CREATED);
     }
@@ -48,7 +43,6 @@ public class EmployeeController {
         return ResponseEntity.ok(record);
     }
 
-    // --- Leave Management (Feature 5) ---
     
     @PostMapping("/leave/apply")
     public ResponseEntity<LeaveRequestDTO> applyForLeave(
@@ -60,7 +54,6 @@ public class EmployeeController {
         return new ResponseEntity<>(newRequest, HttpStatus.CREATED);
     }
 
-    // --- Dashboard & Analytics (Feature 7) ---
 
     @GetMapping("/dashboard/stats")
     public ResponseEntity<DashboardStatsDTO> getPersonalDashboardStats(Authentication authentication) {

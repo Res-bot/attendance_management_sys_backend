@@ -13,9 +13,7 @@ public class AuthResponse {
     private String email;
     private String role;
     
-    // Optional: User ID for frontend convenience
     private Long userId; 
     
-    // Optional: User name for display
     private String userName; 
 }

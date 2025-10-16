@@ -20,18 +20,12 @@ public class AuthController {
 
     private final AuthService authService;
 
-    /**
-     * POST /api/auth/register: Allows new users to sign up (if enabled).
-     */
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody UserDTO userDto) {
         UserDTO registeredUser = authService.registerUser(userDto);
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 
-    /**
-     * POST /api/auth/login: Authenticates user and returns a JWT token.
-     */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest authRequest) {
         AuthResponse response = authService.login(authRequest);

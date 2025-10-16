@@ -18,12 +18,7 @@ public class LeaveController {
 
     private final LeaveService leaveService;
 
-    /**
-     * POST /api/leaves/{applicantId}
-     * Allows a user to submit a new leave request. (Feature 5)
-     * The applicantId should typically come from the authenticated user's principal,
-     * but is passed as a path variable here to match the service method signature.
-     */
+    
     @PostMapping("/{applicantId}")
     public ResponseEntity<LeaveRequestDTO> applyForLeave(
             @PathVariable Long applicantId,
@@ -32,40 +27,29 @@ public class LeaveController {
             LeaveRequestDTO newRequest = leaveService.applyForLeave(applicantId, leaveRequestDTO);
             return new ResponseEntity<>(newRequest, HttpStatus.CREATED);
         } catch (RuntimeException e) {
-            // Handle exceptions like "Applicant user not found"
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 
-    /**
-     * GET /api/leaves/history/{applicantId}
-     * Retrieves a user's own leave history. (Feature 5)
-     * The applicantId should typically come from the authenticated user's principal.
-     */
+    
     @GetMapping("/history/{applicantId}")
     public ResponseEntity<List<LeaveRequestDTO>> getLeaveHistory(@PathVariable Long applicantId) {
         List<LeaveRequestDTO> history = leaveService.getLeaveHistoryByApplicant(applicantId);
         return ResponseEntity.ok(history);
     }
 
-    /**
-     * GET /api/leaves/pending
-     * Retrieves all PENDING leave requests for Admin/Teacher review. (Feature 5)
-     * NOTE: This endpoint should be secured to only allow users with APPROVER roles (e.g., Admin, Teacher).
-     */
+    
     @GetMapping("/pending")
     public ResponseEntity<List<LeaveRequestDTO>> getAllPendingRequests() {
         List<LeaveRequestDTO> pendingRequests = leaveService.getAllPendingRequests();
         return ResponseEntity.ok(pendingRequests);
     }
 
-    // DTO for update status request body
     public static class UpdateStatusRequest {
         private Long approverId;
         private LeaveStatus status;
         private String rejectionReason;
 
-        // Getters and Setters (omitted for brevity but required by Spring/Jackson)
         public Long getApproverId() { return approverId; }
         public void setApproverId(Long approverId) { this.approverId = approverId; }
         public LeaveStatus getStatus() { return status; }
@@ -74,11 +58,7 @@ public class LeaveController {
         public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
     }
 
-    /**
-     * PUT /api/leaves/{requestId}/status
-     * Approves or rejects a leave request. (Feature 5)
-     * NOTE: This endpoint should be secured to only allow users with APPROVER roles.
-     */
+    
     @PutMapping("/{requestId}/status")
     public ResponseEntity<LeaveRequestDTO> updateLeaveStatus(
             @PathVariable Long requestId,
@@ -96,8 +76,7 @@ public class LeaveController {
 
             return ResponseEntity.ok(updatedRequest);
         } catch (RuntimeException e) {
-            // Handle exceptions like "Leave request not found", "Approver user not found", "Request is already processed"
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND); // Or BAD_REQUEST depending on the error
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND); 
         }
     }
 }

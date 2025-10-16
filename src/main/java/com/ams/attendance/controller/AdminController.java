@@ -11,20 +11,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')") // Base authorization for the entire controller
+@PreAuthorize("hasRole('ADMIN')") 
 public class AdminController {
 
     private final AdminService adminService;
-
-    // --- User Management (Feature 2) ---
 
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> getAllUsers(@RequestParam(required = false) UserRole role) {
@@ -32,6 +28,33 @@ public class AdminController {
             return ResponseEntity.ok(adminService.findUsersByRole(role));
         }
         return ResponseEntity.ok(adminService.getAllUsers());
+    }
+
+    @GetMapping("/users/department/{department}")
+    public ResponseEntity<List<UserDTO>> getUsersByDepartment(@PathVariable String department) {
+        return ResponseEntity.ok(adminService.findUsersByDepartment(department));
+    }
+
+    @GetMapping("/users/designation/{designation}")
+    public ResponseEntity<List<UserDTO>> getUsersByDesignation(@PathVariable String designation) {
+        return ResponseEntity.ok(adminService.findUsersByDesignation(designation));
+    }
+
+    @GetMapping("/users/department/{department}/role/{role}")
+    public ResponseEntity<List<UserDTO>> getUsersByDepartmentAndRole(
+            @PathVariable String department,
+            @PathVariable UserRole role) {
+        return ResponseEntity.ok(adminService.findUsersByDepartmentAndRole(department, role));
+    }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<List<UserDTO>> searchUsersByEmail(@RequestParam String emailKeyword) {
+        return ResponseEntity.ok(adminService.searchUsersByEmail(emailKeyword));
+    }
+
+    @GetMapping("/users/role/{role}/sorted")
+    public ResponseEntity<List<UserDTO>> getUsersByRoleSorted(@PathVariable UserRole role) {
+        return ResponseEntity.ok(adminService.findUsersByRoleSorted(role));
     }
 
     @PostMapping("/users")
@@ -52,8 +75,6 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
     
-    // --- System Administration (Feature 8) ---
-    
     @PostMapping("/departments")
     public ResponseEntity<DepartmentDTO> createDepartment(@Valid @RequestBody DepartmentDTO dto) {
         return new ResponseEntity<>(adminService.createDepartment(dto), HttpStatus.CREATED);
@@ -62,27 +83,6 @@ public class AdminController {
     @PostMapping("/courses")
     public ResponseEntity<CourseDTO> createCourse(@Valid @RequestBody CourseDTO dto) {
         return new ResponseEntity<>(adminService.createCourse(dto), HttpStatus.CREATED);
-    }
-    
-    // --- Reports and Bulk Upload (Feature 2 & 4) ---
-    
-    @PostMapping("/users/bulk-upload")
-    public ResponseEntity<String> uploadBulkUsers(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File must not be empty.");
-        }
-        try {
-            String status = adminService.uploadBulkUsers(file.getBytes());
-            return ResponseEntity.ok(status);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to read file.");
-        }
-    }
-    
-    @GetMapping("/reports/attendance")
-    public ResponseEntity<String> generateSystemReport(@RequestParam String period) {
-        String reportStatus = adminService.generateFullAttendanceReport(period);
-        return ResponseEntity.ok(reportStatus);
-    }
+    }    
 }
 

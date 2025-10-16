@@ -31,7 +31,7 @@ public class User implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    private String password; // Will store the BCrypt hash
+    private String password; 
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,7 +40,7 @@ public class User implements UserDetails {
     private String department;
     private String designation;
     private String phoneNumber;
-    private String photoUrl; // For profile photo
+    private String photoUrl; 
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -53,7 +53,6 @@ public class User implements UserDetails {
     )
     private Set<Course> courses = new HashSet<>();
     
-    // --- Spring Security UserDetails implementation ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

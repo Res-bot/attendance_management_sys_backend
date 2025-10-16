@@ -8,5 +8,5 @@ public class CourseDTO {
     private String courseCode;
     private String name;
     private Integer credits;
-    private Long departmentId; // Used for linking the course to a department
+    private Long departmentId; 
 }

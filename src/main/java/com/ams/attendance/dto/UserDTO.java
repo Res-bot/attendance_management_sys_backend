@@ -17,7 +17,6 @@ public class UserDTO {
     @NotEmpty(message = "Email is required")
     private String email;
 
-    // Password is only required for register/login requests
     private String password; 
     
     private UserRole role;

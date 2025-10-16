@@ -25,12 +25,10 @@ public class Course {
 
     private Integer credits;
 
-    // Relationship: Many Courses belong to One Department
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 
-    // Relationship: Many Courses can have Many Users (Students and Teachers)
     @ManyToMany(mappedBy = "courses")
     private Set<User> users = new HashSet<>(); 
     

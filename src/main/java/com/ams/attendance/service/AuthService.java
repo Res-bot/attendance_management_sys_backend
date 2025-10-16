@@ -18,32 +18,22 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
-    // Removed 'private final PasswordEncoder passwordEncoder;' as it is not directly used here
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final AdminService adminService; // For user creation
+    private final AdminService adminService; 
 
-    // --- User Registration (Encrypts password by delegating to AdminService) ---
-    /**
-     * Handles user registration, delegates creation and password hashing to AdminService.
-     * @param userDto User details including plain text password.
-     * @return UserDTO of the newly created user.
-     */
+    
     public UserDTO registerUser(UserDTO userDto) {
-        // 1. Ensure email is unique
         if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new RuntimeException("User with this email already exists.");
         }
         
-        // 2. Default role determination
         UserRole role = userDto.getRole() != null ? userDto.getRole() : determineDefaultRole(userDto.getEmail());
         userDto.setRole(role);
 
-        // 3. Delegation: AdminService.createUser handles the password encoding (BCrypt).
         return adminService.createUser(userDto);
     }
     
-    // Simple logic to set a default role based on email or context
     private UserRole determineDefaultRole(String email) {
         if (email.endsWith("@student.com")) return UserRole.STUDENT;
         if (email.endsWith("@teacher.com")) return UserRole.TEACHER;
@@ -51,28 +41,17 @@ public class AuthService {
     }
 
 
-    // --- User Login (Authenticates credentials and issues JWT) ---
-    /**
-     * Authenticates the user and generates a JWT token upon successful login.
-     * The password comparison (hashing) is handled internally by Spring Security.
-     * @param authRequest Contains email (username) and plain text password.
-     * @return AuthResponse containing the JWT token and user details.
-     */
+   
     public AuthResponse login(AuthRequest authRequest) {
         try {
-            // 1. Authentication: The AuthenticationManager finds the User (via AdminService), 
-            //    loads the hashed password, and compares it to the plain password provided.
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
             );
             
-            // 2. Load User Details: Cast to our custom User entity to access ID and Name.
             final User user = (User) authentication.getPrincipal(); 
             
-            // 3. Generate JWT token
             final String jwt = jwtUtil.generateToken(user);
             
-            // 4. Extract role and build response
             String role = user.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
             
             return new AuthResponse(
@@ -84,7 +63,6 @@ public class AuthService {
             );
 
         } catch (Exception e) {
-            // Catch AuthenticationException (wrapped in a generic Exception) and provide a generic failure message.
             throw new RuntimeException("Authentication failed: Invalid email or password.", e);
         }
     }

@@ -21,12 +21,9 @@ public class Department {
 
     private String description;
 
-    // Relationship: One Department can have Many Users
-    // MappedBy indicates that the 'department' field in the User entity owns the relationship.
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<User> users; 
     
-    // Relationship: One Department can offer Many Courses
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<Course> courses;
 }

@@ -38,12 +38,15 @@ public class LeaveRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LeaveStatus status; // PENDING, APPROVED, REJECTED (You'll need to create LeaveStatus enum)
+    private LeaveStatus status; 
 
-    // Relationship: The user who approved/rejected the request (e.g., Admin/Teacher/Manager)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approver_id")
     private User approver;
 
     private String rejectionReason;
+
+    public User getUser() {
+        throw new UnsupportedOperationException("Unimplemented method 'getUser'");
+    }
 }

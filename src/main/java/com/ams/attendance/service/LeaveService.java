@@ -20,7 +20,6 @@ public class LeaveService {
     private final LeaveRepository leaveRepository;
     private final UserRepository userRepository;
 
-    // Helper method to convert Entity to DTO
     private LeaveRequestDTO convertToDto(LeaveRequest request) {
         LeaveRequestDTO dto = new LeaveRequestDTO();
         dto.setId(request.getId());
@@ -40,11 +39,8 @@ public class LeaveService {
         return dto;
     }
 
-    /**
-     * Allows a user to submit a new leave request. (Feature 5)
-     */
     public LeaveRequestDTO applyForLeave(Long applicantId, LeaveRequestDTO dto) {
-        // Find applicant
+    
         User applicant = userRepository.findById(applicantId)
             .orElseThrow(() -> new RuntimeException("Applicant user not found."));
 
@@ -53,25 +49,21 @@ public class LeaveService {
         request.setStartDate(dto.getStartDate());
         request.setEndDate(dto.getEndDate());
         request.setReason(dto.getReason());
-        request.setStatus(LeaveStatus.PENDING); // Always pending initially
+        request.setStatus(LeaveStatus.PENDING); 
         request.setRequestedOn(LocalDateTime.now());
 
         LeaveRequest savedRequest = leaveRepository.save(request);
         return convertToDto(savedRequest);
     }
     
-    /**
-     * Retrieves all PENDING leave requests for Admin/Teacher review. (Feature 5)
-     */
+
     public List<LeaveRequestDTO> getAllPendingRequests() {
         return leaveRepository.findByStatus(LeaveStatus.PENDING).stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
 
-    /**
-     * Approves or rejects a leave request. (Feature 5)
-     */
+    
     public LeaveRequestDTO updateLeaveStatus(Long requestId, Long approverId, LeaveStatus status, String rejectionReason) {
         LeaveRequest request = leaveRepository.findById(requestId)
             .orElseThrow(() -> new RuntimeException("Leave request not found."));
@@ -89,15 +81,11 @@ public class LeaveService {
 
         LeaveRequest updatedRequest = leaveRepository.save(request);
         
-        // NOTE: Additional logic to update the Attendance records 
-        // for the granted leave dates (auto-adjustment) would go here.
         
         return convertToDto(updatedRequest);
     }
     
-    /**
-     * Retrieves a user's own leave history. (Feature 5)
-     */
+    
     public List<LeaveRequestDTO> getLeaveHistoryByApplicant(Long applicantId) {
         return leaveRepository.findByApplicant_IdOrderByRequestedOnDesc(applicantId).stream()
             .map(this::convertToDto)

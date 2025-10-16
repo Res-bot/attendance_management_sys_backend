@@ -1,5 +1,7 @@
 package com.ams.attendance.dto;
 
+import com.ams.attendance.entity.LeaveRequest;
+import com.ams.attendance.entity.User;
 import com.ams.attendance.enums.LeaveStatus;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotEmpty;
@@ -14,7 +16,6 @@ public class LeaveRequestDTO {
 
     private Long id;
 
-    // Fields required for submitting a request
     @NotNull(message = "Start date is required")
     @FutureOrPresent(message = "Start date must be today or in the future")
     private LocalDate startDate;
@@ -25,24 +26,45 @@ public class LeaveRequestDTO {
     @NotEmpty(message = "Reason for leave is required")
     private String reason;
     
-    // --- Related User Information (for display/submission context) ---
     
-    // The ID of the user applying for leave (sent by frontend or derived in service from JWT)
     private Long applicantId; 
     
-    // Name of the applicant (read-only for display)
     private String applicantName; 
 
-    // --- Status and Approval Information ---
     
-    private LeaveStatus status; // PENDING, APPROVED, REJECTED (from enums package)
+    private LeaveStatus status; 
 
     private LocalDateTime requestedOn;
     
-    // The ID and Name of the approver (read-only for display)
     private Long approverId;
     private String approverName;
     
     private String rejectionReason;
-}
 
+    
+    public static LeaveRequestDTO fromEntity(LeaveRequest entity) {
+        LeaveRequestDTO dto = new LeaveRequestDTO();
+        
+        dto.setId(entity.getId());
+        dto.setStartDate(entity.getStartDate());
+        dto.setEndDate(entity.getEndDate());
+        dto.setReason(entity.getReason());
+        dto.setStatus(entity.getStatus());
+        dto.setRequestedOn(entity.getRequestedOn());
+        dto.setRejectionReason(entity.getRejectionReason());
+
+        User applicant = entity.getUser();
+        if (applicant != null) {
+            dto.setApplicantId(applicant.getId());
+            dto.setApplicantName(applicant.getName()); 
+        }
+
+        User approver = entity.getApprover();
+        if (approver != null) {
+            dto.setApproverId(approver.getId());
+            dto.setApproverName(approver.getName()); 
+        }
+
+        return dto;
+    }
+}

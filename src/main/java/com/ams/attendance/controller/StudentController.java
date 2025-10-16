@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.ams.attendance.entity.User; // Required for casting principal
+import com.ams.attendance.entity.User; 
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,15 +23,13 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    /**
-     * Helper to get the authenticated user's ID from the security context (JWT principal).
-     */
+    
     private Long getCurrentUserId(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return user.getId();
     }
 
-    // --- Attendance Marking (Feature 3) ---
+  
 
     @PostMapping("/checkin")
     public ResponseEntity<AttendanceDTO> studentCheckIn(Authentication authentication) {
@@ -40,7 +38,6 @@ public class StudentController {
         return new ResponseEntity<>(record, HttpStatus.CREATED);
     }
     
-    // --- Leave Management (Feature 5) ---
 
     @PostMapping("/leave/apply/class")
     public ResponseEntity<LeaveRequestDTO> applyForClassLeave(
@@ -52,7 +49,6 @@ public class StudentController {
         return new ResponseEntity<>(newRequest, HttpStatus.CREATED);
     }
 
-    // --- Dashboard & Analytics (Feature 7) ---
 
     @GetMapping("/dashboard/attendance-percentage/{courseId}")
     public ResponseEntity<Double> getAttendancePercentage(
@@ -64,8 +60,6 @@ public class StudentController {
         return ResponseEntity.ok(percentage);
     }
     
-    // --- Notifications (Feature 6) ---
-
     @GetMapping("/alerts/low-attendance")
     public ResponseEntity<List<String>> getLowAttendanceAlerts(Authentication authentication) {
         Long userId = getCurrentUserId(authentication);

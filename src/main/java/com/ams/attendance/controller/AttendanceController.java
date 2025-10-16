@@ -22,8 +22,6 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
-    // --- Helper Method to Extract User ID from JWT ---
-    // Since the User entity implements UserDetails, we can cast the principal.
     private Long getCurrentUserId(Authentication authentication) {
         if (authentication.getPrincipal() instanceof User user) {
             return user.getId();
@@ -31,7 +29,6 @@ public class AttendanceController {
         throw new SecurityException("Unable to retrieve user ID from authentication context.");
     }
 
-    // --- Feature 3: Self Check-In ---
     @PostMapping("/checkin")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'STUDENT', 'TEACHER')")
     public ResponseEntity<AttendanceDTO> checkIn(
@@ -41,7 +38,6 @@ public class AttendanceController {
         Long userId = getCurrentUserId(authentication);
         LocalDateTime checkInTime = LocalDateTime.now();
         
-        // Note: The notes field is optional and may come from the request body or be defaulted.
         AttendanceDTO record = attendanceService.checkIn(
             userId, 
             checkInTime, 
@@ -50,7 +46,6 @@ public class AttendanceController {
         return new ResponseEntity<>(record, HttpStatus.CREATED);
     }
 
-    // --- Feature 3: Self Check-Out ---
     @PutMapping("/checkout")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'STUDENT', 'TEACHER')")
     public ResponseEntity<AttendanceDTO> checkOut(Authentication authentication) {
@@ -62,7 +57,6 @@ public class AttendanceController {
         return ResponseEntity.ok(record);
     }
 
-    // --- Feature 4: Personal Attendance Report ---
     @GetMapping("/report/self")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'STUDENT', 'TEACHER')")
     public ResponseEntity<List<AttendanceDTO>> getPersonalReport(

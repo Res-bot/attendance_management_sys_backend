@@ -6,11 +6,14 @@ import com.ams.attendance.entity.Attendance;
 import com.ams.attendance.entity.Course;
 import com.ams.attendance.entity.LeaveRequest;
 import com.ams.attendance.entity.User;
+import com.ams.attendance.enums.AttendanceStatus;
 import com.ams.attendance.enums.LeaveStatus;
 import com.ams.attendance.repository.AttendanceRepository;
 import com.ams.attendance.repository.CourseRepository;
 import com.ams.attendance.repository.LeaveRepository;
 import com.ams.attendance.repository.UserRepository;
+
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -98,13 +101,26 @@ public class TeacherService {
         return leaveService.getAllPendingRequests();
     }
 
+    @Getter
+    public static class StudentEmailInfo { 
+        private final String email;
+        private final String subject;
+        private final String body;
+
+        public StudentEmailInfo(String email, String subject, String body) {
+            this.email = email;
+            this.subject = subject;
+            this.body = body;
+        }
+    }
+
     
-    public void notifyAbsentStudents(Long courseId, LocalDate attendanceDate) {
+    public List<StudentEmailInfo> getAbsentStudentEmailInfo(Long courseId, LocalDate attendanceDate) {
         List<Long> allStudentIds = getStudentsByCourse(courseId);
         
         String courseName = courseRepository.findById(courseId)
             .map(Course::getName) 
-            .orElse("Unknown Course");
+            .orElseThrow(() -> new IllegalArgumentException("Course not found with id: " + courseId));
 
         LocalDateTime start = attendanceDate.atStartOfDay();
         LocalDateTime end = attendanceDate.plusDays(1).atStartOfDay();
@@ -112,6 +128,7 @@ public class TeacherService {
         Set<Long> presentStudentIds = attendanceRepository
                 .findByCourse_IdAndCheckInTimeBetween(courseId, start, end)
                 .stream()
+                .filter(att -> att.getStatus() != AttendanceStatus.ABSENT)
                 .map(att -> att.getUser().getId())
                 .collect(Collectors.toSet());
 
@@ -123,18 +140,20 @@ public class TeacherService {
 
         String subject = "Absence Notification for " + courseName + " on " + attendanceDate.toString();
 
-        for (User user : absentUsers) {
-            String body = String.format(
-                "Dear %s,\n\nOur records show that you were marked absent for the class (%s) on %s. "
-                + "Please follow up with your teacher if you believe this is an error.\n\n"
-                + "Regards,\nTeacher Service",
-                user.getName(), 
-                courseName,
-                attendanceDate.toString()
-            );
-            
-            emailService.sendEmail(user.getEmail(), subject, body); 
-        }
+        // Map absent users to their personalized email details
+        return absentUsers.stream()
+            .map(user -> {
+                String body = String.format(
+                    "Dear %s,\n\nOur records show that you were marked absent for the class (%s) on %s. "
+                    + "Please follow up with your teacher if you believe this is an error.\n\n"
+                    + "Regards,\nTeacher Service",
+                    user.getName(), 
+                    courseName,
+                    attendanceDate.toString()
+                );
+                return new StudentEmailInfo(user.getEmail(), subject, body);
+            })
+            .collect(Collectors.toList());
     }
 }
 

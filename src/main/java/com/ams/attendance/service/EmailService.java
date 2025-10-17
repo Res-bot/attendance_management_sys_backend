@@ -2,7 +2,11 @@ package com.ams.attendance.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.boot.autoconfigure.task.TaskSchedulingProperties.Simple;
 import org.springframework.mail.MailException;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -38,6 +42,21 @@ public class EmailService {
         } catch (MailException e) {
             log.error("Error sending email to recipient: {}", to, e);
         }
+    }
+
+
+    public void sendEmails(String to, String subject, String body) {
+       SimpleMailMessage mail= new SimpleMailMessage();
+       try {
+        mail.setTo(to);
+        mail.setSubject(subject);
+        mail.setText(body);
+        mailSender.send(mail);
+        
+       } catch (Exception e) {
+        log.error(body, e);
+       }
+        
     }
 }
 
